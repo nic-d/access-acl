@@ -8,8 +8,8 @@
 
 namespace Nybbl\AccessAcl\Controller\Plugin\Factory;
 
-use Nybbl\AccessAcl\Service\AclService;
 use Interop\Container\ContainerInterface;
+use Nybbl\AccessAcl\Service\AccessService;
 use Zend\ServiceManager\Factory\FactoryInterface;
 use Nybbl\AccessAcl\Controller\Plugin\AssertionControllerPlugin;
 
@@ -27,7 +27,7 @@ class AssertionControllerPluginFactory implements FactoryInterface
      */
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        $aclService = $container->get(AclService::class);
-        return new AssertionControllerPlugin($aclService);
+        $accessService = $container->get(AccessService::class);
+        return new AssertionControllerPlugin($accessService);
     }
 }

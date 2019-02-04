@@ -51,6 +51,7 @@ return [
     'access_manager' => [
         'redirect_route_name' => 'application.home',
         'default_access_all_role' => 'Guest',
+        'assertions' => [],
 
         'resources' => [
             Controller\NotAuthorisedController::class => [

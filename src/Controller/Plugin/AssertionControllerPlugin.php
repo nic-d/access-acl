@@ -8,7 +8,8 @@
 
 namespace Nybbl\AccessAcl\Controller\Plugin;
 
-use Nybbl\AccessAcl\Service\AclService;
+use Nybbl\AccessAcl\Service\AccessService;
+use Nybbl\AccessAcl\Contract\AccessInterface;
 use Zend\Mvc\Controller\Plugin\AbstractPlugin;
 
 /**
@@ -17,26 +18,34 @@ use Zend\Mvc\Controller\Plugin\AbstractPlugin;
  */
 class AssertionControllerPlugin extends AbstractPlugin
 {
-    /** @var AclService $aclService */
-    private $aclService;
+    /** @var AccessService $accessService */
+    private $accessService;
 
     /**
      * AssertionControllerPlugin constructor.
-     * @param AclService $aclService
+     * @param AccessService $accessService
      */
-    public function __construct(AclService $aclService)
+    public function __construct(AccessService $accessService)
     {
-        $this->aclService = $aclService;
+        $this->accessService = $accessService;
     }
 
     /**
-     * @param string $role
      * @param string $resource
+     * @param string $action
      * @param null $privilege
+     * @param array $options
      * @return bool
      */
-    public function __invoke(string $role, string $resource, $privilege = null): bool
+    public function __invoke(string $resource, string $action, $privilege = null, array $options = []): bool
     {
-        return $this->aclService->isAllowed($role, $resource, $privilege);
+        /** @var int $assertionResult */
+        $assertionResult = $this->accessService->runAssertions([], $resource, $action, $privilege, $options);
+
+        if ($assertionResult === AccessInterface::ACCESS_GRANTED) {
+            return true;
+        }
+
+        return false;
     }
 }

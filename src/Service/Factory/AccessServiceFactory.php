@@ -9,8 +9,8 @@
 namespace Nybbl\AccessAcl\Service\Factory;
 
 use Nybbl\AccessAcl\Service\AclService;
-use Nybbl\AccessAcl\Service\AccessService;
 use Interop\Container\ContainerInterface;
+use Nybbl\AccessAcl\Service\AccessService;
 use Zend\EventManager\EventManagerInterface;
 use Zend\Authentication\AuthenticationService;
 use Zend\ServiceManager\Factory\FactoryInterface;
@@ -34,6 +34,6 @@ class AccessServiceFactory implements FactoryInterface
         $aclService = $container->get(AclService::class);
         $config = $container->get('config')['access_manager'];
 
-        return new AccessService($eventManager, $authenticationService, $aclService, $config);
+        return new AccessService($eventManager, $container, $authenticationService, $aclService, $config);
     }
 }

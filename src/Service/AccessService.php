@@ -8,18 +8,24 @@
 
 namespace Nybbl\AccessAcl\Service;
 
+use Interop\Container\ContainerInterface;
 use Zend\EventManager\EventManagerInterface;
+use Nybbl\AccessAcl\Contract\AccessInterface;
 use Zend\Authentication\AuthenticationService;
 use Zend\EventManager\EventManagerAwareInterface;
+use Nybbl\AccessAcl\Contract\DynamicAssertionInterface;
 
 /**
  * Class AccessService
  * @package Nybbl\AccessAcl\Service
  */
-class AccessService implements EventManagerAwareInterface
+class AccessService implements EventManagerAwareInterface, AccessInterface
 {
     /** @var EventManagerInterface $eventManager */
     private $eventManager;
+
+    /** @var ContainerInterface $container */
+    private $container;
 
     /** @var AuthenticationService $authenticationService */
     private $authenticationService;
@@ -30,19 +36,17 @@ class AccessService implements EventManagerAwareInterface
     /** @var array $moduleConfig */
     private $moduleConfig = [];
 
-    const ACCESS_GRANTED = 1;
-    const AUTH_REQUIRED  = 2;
-    const ACCESS_DENIED  = 3;
-
     /**
      * AccessService constructor.
      * @param EventManagerInterface $eventManager
+     * @param ContainerInterface $container
      * @param AuthenticationService $authenticationService
      * @param AclService $aclService
      * @param array $moduleConfig
      */
     public function __construct(
         EventManagerInterface $eventManager,
+        ContainerInterface $container,
         AuthenticationService $authenticationService,
         AclService $aclService,
         array $moduleConfig = []
@@ -52,6 +56,7 @@ class AccessService implements EventManagerAwareInterface
         $this->eventManager = $eventManager;
         $this->aclService = $aclService;
         $this->authenticationService = $authenticationService;
+        $this->container = $container;
     }
 
     /**
@@ -65,7 +70,19 @@ class AccessService implements EventManagerAwareInterface
         $resources = $this->moduleConfig['resources'];
 
         /** @var string $defaultRole */
-        $defaultRole = $this->moduleConfig['default_access_all_role'];
+        $defaultRole = $this->getCurrentRole();
+
+        // First thing we want to do is run the dynamic assertions
+        $assertionResult = $this->runAssertions(
+            $this->moduleConfig['assertions'],
+            $controller,
+            $action,
+            $defaultRole
+        );
+
+        if (!is_null($assertionResult)) {
+            return $assertionResult;
+        }
 
         // If the $controller isn't mapped yet, don't give access
         if (!isset($resources[$controller])) {
@@ -110,6 +127,88 @@ class AccessService implements EventManagerAwareInterface
         }
 
         return self::ACCESS_DENIED;
+    }
+
+    /**
+     * @param DynamicAssertionInterface $assertionInstance
+     * @param string $resource
+     * @param string $action
+     * @param null $privilege
+     * @param array $options
+     * @return int|void
+     */
+    private function runAssertion(
+        DynamicAssertionInterface $assertionInstance,
+        string $resource,
+        string $action,
+        $privilege = null,
+        array $options = []
+    )
+    {
+        /** @var int|void $assertionResult */
+        $assertionResult = $assertionInstance->assert($resource, $privilege, array_merge_recursive(
+            ['action' => $action], $options)
+        );
+
+        // If the $assertionResult returns void, then its type is NULL
+        if (is_null($assertionResult)) {
+            return;
+        }
+
+        return $assertionResult;
+    }
+
+    /**
+     * @param array|[] $assertions
+     * @param string $resource
+     * @param string $action
+     * @param null $privilege
+     * @param array $options
+     * @return int|void
+     */
+    public function runAssertions(array $assertions = [], string $resource, string $action, $privilege = null, array $options = [])
+    {
+        // If no assertions are passed in, load them from the config
+        if (empty($assertions)) {
+            $assertions = $this->moduleConfig['assertions'];
+        }
+
+        // Iterate through all the assertions, and get the instance from the Container
+        foreach ($assertions as $assertion) {
+            /** @var DynamicAssertionInterface $assertionInstance */
+            $assertionInstance = $this->container->get($assertion);
+
+            /** @var int|void $assertionResult */
+            $assertionResult = $this->runAssertion(
+                $assertionInstance,
+                $resource,
+                $action,
+                $privilege,
+                $options
+            );
+
+            if (is_null($assertionResult)) {
+                continue;
+            }
+
+            return $assertionResult;
+        }
+    }
+
+    /**
+     * @return string
+     */
+    private function getCurrentRole(): string
+    {
+        /** @var string $defaultRole */
+        $defaultRole = $this->moduleConfig['default_access_all_role'];
+
+        // If there's an identity in the authservice, fetch the role name
+        if ($this->authenticationService->hasIdentity()) {
+            return $this->authenticationService->getIdentity()->getRole()->getName();
+        }
+
+        return $defaultRole;
     }
 
     /**

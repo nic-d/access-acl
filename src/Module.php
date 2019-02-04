@@ -11,8 +11,6 @@ namespace Nybbl\AccessAcl;
 use Zend\EventManager\EventInterface;
 use Nybbl\AccessAcl\Event\DispatchEvent;
 use Zend\EventManager\EventManagerInterface;
-use Zend\Authentication\AuthenticationService;
-use Zend\Authentication\AuthenticationServiceInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
 use Zend\ModuleManager\Feature\BootstrapListenerInterface;
 
