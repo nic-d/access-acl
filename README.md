@@ -81,3 +81,15 @@ Then add the alias to the interface in your module config:
     ],
 ],
 ```
+
+## Creating Roles
+To create a role, you'll need to create a class that implements the Nybbl\AccessAcl\Contract\RoleInterface
+
+Like so:
+```php
+class AdminRole implements RoleInterface
+{
+    // Implement body methods.
+}
+```
+Your custom role provider can then consume these roles.
