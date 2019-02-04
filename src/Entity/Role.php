@@ -9,7 +9,7 @@
 namespace Nybbl\AccessAcl\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use AccessAcl\Contract\RoleInterface;
+use Nybbl\AccessAcl\Contract\RoleInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
