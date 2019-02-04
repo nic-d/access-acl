@@ -43,7 +43,7 @@ class Role implements RoleInterface
     private $name;
 
     /**
-     * @ORM\ManyToMany(targetEntity="AccessAcl\Entity\Role", inversedBy="children", cascade={"all"})
+     * @ORM\ManyToMany(targetEntity="Nybbl\AccessAcl\Entity\Role", inversedBy="children", cascade={"all"})
      * @ORM\JoinTable(name="access_acl_role_hierarchy",
      *      joinColumns={@ORM\JoinColumn(name="child_role_id", referencedColumnName="id")},
      *      inverseJoinColumns={@ORM\JoinColumn(name="parent_role_id", referencedColumnName="id")}
@@ -52,7 +52,7 @@ class Role implements RoleInterface
     private $parents;
 
     /**
-     * @ORM\ManyToMany(targetEntity="AccessAcl\Entity\Role", mappedBy="parents", cascade={"all"})
+     * @ORM\ManyToMany(targetEntity="Nybbl\AccessAcl\Entity\Role", mappedBy="parents", cascade={"all"})
      */
     private $children;
 

@@ -83,7 +83,7 @@ return [
 
             'orm_default' => [
                 'drivers' => [
-                    'AccessAcl\Entity' => 'access_acl_driver',
+                    'Nybbl\AccessAcl\Entity' => 'access_acl_driver',
                 ],
             ],
         ],
