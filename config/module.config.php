@@ -37,6 +37,17 @@ return [
         ],
     ],
 
+    'controller_plugins' => [
+        'factories' => [
+            Controller\Plugin\AssertionControllerPlugin::class => Controller\Plugin\Factory\AssertionControllerPluginFactory::class,
+        ],
+
+        'aliases' => [
+            'assert' => Controller\Plugin\AssertionControllerPlugin::class,
+            'assertion' => Controller\Plugin\AssertionControllerPlugin::class,
+        ],
+    ],
+
     'access_manager' => [
         'redirect_route_name' => 'application.home',
         'default_access_all_role' => 'Guest',
