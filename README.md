@@ -69,3 +69,15 @@ You can create a view directory in any module with the path:
 ```
 access-acl/not-authorised/index.twig
 ```
+
+## Changing Role Providers
+To change your role provider, you'll need a class that implements the RoleProviderInterface.
+Then add the alias to the interface in your module config:
+
+```php
+'service_manager' => [
+    'aliases' => [
+        Nybbl\AccessAcl\Contract\RoleProviderInterface::class => MyCustomRoleProvider::class,
+    ],
+],
+```
