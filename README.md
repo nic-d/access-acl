@@ -93,3 +93,41 @@ class AdminRole implements RoleInterface
 }
 ```
 Your custom role provider can then consume these roles.
+
+## Creating Dynamic Assertions
+```php
+use Nybbl\AccessAcl\Contract\DynamicAssertionInterface;
+
+class ExampleAssertion implements DynamicAssertionInterface
+{
+    /**
+     * @param string $resource
+     * @param null $privilege
+     * @param array $options
+     * @return bool|mixed
+     */
+    public function assert(string $resource, $privilege = null, array $options = [])
+    {
+        // Implement yor logic based on the result...
+        if ($options['can.edit']) {
+            if ($options['identity']->id() === $options['blogPost']->ownerId()) {
+                return self:ACCESS_GRANTED;
+            }
+        }
+    }
+}
+```
+
+In your controller:
+```php
+public function editAction()
+{
+    $this->assert(ExampleAssertion::class, 'index', 'can.edit', [
+        'identity' => $this->identity(),
+        'blogPost' => $blogPostEntity,
+    ]);
+
+    return new ViewModel();
+}
+```
+By default, a dynamic assertion will return false.
